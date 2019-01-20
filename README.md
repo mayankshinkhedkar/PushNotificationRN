@@ -25,3 +25,18 @@ react-native run-ios
 ```bash
 react-native start
 ```
+
+### 5. To Install Firebase
+```bash
+npm install --save react-native-firebase
+```
+
+### 6. Create New Project in [Firebase Console](https://console.firebase.google.com/u/0/)
+```bash
+Create new project there and follow steps as per the documentation
+```
+
+### 7. Install Firebase [Cloud Messaging](https://rnfirebase.io/docs/v5.x.x/messaging/introduction)
+```bash
+Follow steps as given for Android and iOS
+```
