@@ -8,7 +8,7 @@
 
 import React, { Component } from 'react';
 import { Platform, StyleSheet, Text, View } from 'react-native';
-import firebase, { RemoteMessage } from 'react-native-firebase';
+import firebase, { RemoteMessage, Notification, NotificationOpen } from 'react-native-firebase';
 
 const instructions = Platform.select({
   ios: 'Press Cmd+R to reload,\n' + 'Cmd+D or shake for dev menu',
@@ -21,7 +21,7 @@ type Props = {};
 export default class App extends Component<Props> {
 
   componentDidMount = async () => {
-    
+
     /**
      * Monitor token generation
      */
@@ -29,14 +29,19 @@ export default class App extends Component<Props> {
       // Process your token as required
       await this._getToken();
     });
-    
+
     await this._checkPermission();
     this._onMessageReceived();
+    this._onNotificationDisplay();
+    this._onNotificationOpen();
   }
 
   componentWillUnmount = () => {
     this.onTokenRefreshListener();
     this.messageListener();
+    this.notificationDisplayedListener();
+    this.notificationListener();
+    this.notificationOpenedListener();
   }
 
   /**
@@ -92,6 +97,53 @@ export default class App extends Component<Props> {
       // Process your message as required
       console.log('RemoteMessage', message);
     });
+  }
+
+  /**
+   * Listeners of Notification
+   */
+  _onNotificationDisplay = () => {
+
+    /** Triggered when a particular notification has been displayed */
+    this.notificationDisplayedListener = firebase.notifications().onNotificationDisplayed((notification: Notification) => {
+      // Process your notification as required
+      // ANDROID: Remote notifications do not contain the channel ID. You will have to specify this manually if you'd like to re-display the notification.
+      console.log('onNotificationDisplayed', notification);
+    });
+
+    /** Triggered when a particular notification has been received */
+    this.notificationListener = firebase.notifications().onNotification((notification: Notification) => {
+      // Process your notification as required
+      console.log('onNotification', notification);
+    });
+  }
+
+  /**
+   * Listen for a Notification being opened
+   */
+  _onNotificationOpen = async () => {
+
+    /** App in Foreground and background */
+    this.notificationOpenedListener = firebase.notifications().onNotificationOpened((notificationOpen: NotificationOpen) => {
+      // Get the action triggered by the notification being opened
+      const action = notificationOpen.action;
+      // Get information about the notification that was opened
+      const notification: Notification = notificationOpen.notification;
+      console.log('FG action', action);
+      console.log('FG notification', notification);
+    });
+
+    /** App Closed */
+    const notificationOpen: NotificationOpen = await firebase.notifications().getInitialNotification();
+    if (notificationOpen) {
+      // App was opened by a notification
+      // Get the action triggered by the notification being opened
+      const action = notificationOpen.action;
+      // Get information about the notification that was opened
+      const notification: Notification = notificationOpen.notification;
+      console.log('Closed action', action);
+      console.log('Closed notification', notification);
+    }
   }
 
   render = () => {
